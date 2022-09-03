@@ -65,7 +65,7 @@ const Home: NextPage = () => {
     else
       return keys.flatMap((key) =>
         handleJsonObject(jsonObject[key], false).flatMap(
-          (value) => `ASPNETCORRE_${key}__${value}`
+          (value) => `ASPNETCORE_${key}__${value}`
         )
       );
   };
