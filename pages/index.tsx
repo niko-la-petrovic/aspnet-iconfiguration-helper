@@ -1,9 +1,73 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import { useEffect, useState } from "react";
+
+import Head from "next/head";
+import Image from "next/image";
+import type { NextPage } from "next";
+import ReactJson from "react-json-view";
+import { join } from "path";
+import { stringify } from "querystring";
+import styles from "../styles/Home.module.css";
 
 const Home: NextPage = () => {
+  const [jsonConfig, setJsonConfig] = useState<string | null>(null);
+
+  const [jsonObject, setJsonObject] = useState<any | null>(null);
+  const [result, setResult] = useState<string[] | null>(null);
+  useEffect(() => {
+    try {
+      setJsonObject(JSON.parse(jsonConfig ?? "{}"));
+      const result: string[] = handleJsonObject(jsonObject, true);
+      setResult(result);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [jsonConfig]);
+
+  const handleJsonObject = (
+    jsonObject: any | null,
+    isFirst: boolean
+  ): string[] => {
+    const keys = Object.keys(jsonObject);
+    if (keys?.length == 0) return [];
+
+    if (!isFirst)
+      return [
+        ...keys.flatMap((key) => {
+          const value = jsonObject[key];
+          const valueType = typeof value;
+          if (
+            valueType === "number" ||
+            valueType === "string" ||
+            value === "boolean"
+          )
+            return [`${key}=${value}`];
+          else if (value instanceof Array) {
+            return value.flatMap((v, i) => {
+              const valueType = typeof v;
+              if (
+                valueType === "number" ||
+                valueType === "string" ||
+                v === "boolean"
+              )
+                return [`${key}__${i}=${v}`];
+              else
+                return handleJsonObject(v, false).map(
+                  (v) => `${key}__${i}__${v}`
+                );
+            });
+          } else
+            return handleJsonObject(value, false).map((v) => `${key}__${v}`);
+        }),
+      ];
+    else
+      return keys.flatMap((key) =>
+        handleJsonObject(jsonObject[key], false).flatMap(
+          (value) => `ASPNETCORRE_${key}__${value}`
+        )
+      );
+  };
+
+  const resultStr = result?.join("\r");
   return (
     <div className={styles.container}>
       <Head>
@@ -13,43 +77,40 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+        <h1 className={styles.title}>ASP.NET Configuration Helper</h1>
 
         <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.tsx</code>
+          Paste your JSON configuration below
+          <code className={styles.code}>e.g. appsettings.json</code>
         </p>
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+        <div className="flex items-center justify-evenly gap-x-2 w-full">
+          <div className="flex rounded-lg shadow justify-center grow">
+            <textarea
+              className="w-full grow"
+              placeholder="..."
+              value={jsonConfig ?? ""}
+              onChange={(e) => setJsonConfig(e.target.value)}
+            />
+          </div>
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+          <div className="flex grow justify-center">
+            <ReactJson src={jsonObject} />
+          </div>
 
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+          <div className="flex flex-col justify-center items-center grow">
+            <textarea
+              className="w-full grow"
+              placeholder="..."
+              value={resultStr}
+            />
+            <button
+              className="w-full bg-blue-600 text-white rounded-lg p-2 font-semibold hover:bg-blue-700 active:bg-blue-800"
+              onClick={() => navigator.clipboard.writeText(resultStr ?? "")}
+            >
+              Copy
+            </button>
+          </div>
         </div>
       </main>
 
@@ -59,14 +120,14 @@ const Home: NextPage = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
+          Powered by{" "}
           <span className={styles.logo}>
             <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
           </span>
         </a>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
