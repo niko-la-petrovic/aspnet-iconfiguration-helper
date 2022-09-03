@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import type { NextPage } from "next";
-import ReactJson from "react-json-view";
-import { join } from "path";
-import { stringify } from "querystring";
+import dynamic from "next/dynamic";
 import styles from "../styles/Home.module.css";
 
 const Home: NextPage = () => {
+  const DynamicReactJson = dynamic(import("react-json-view"), { ssr: false });
+
   const [jsonConfig, setJsonConfig] = useState<string | null>(null);
 
   const [jsonObject, setJsonObject] = useState<any | null>(null);
@@ -16,18 +16,21 @@ const Home: NextPage = () => {
   useEffect(() => {
     try {
       setJsonObject(JSON.parse(jsonConfig ?? "{}"));
-      const result: string[] = handleJsonObject(jsonObject, true);
-      setResult(result);
     } catch (e) {
       console.error(e);
     }
   }, [jsonConfig]);
 
+  useEffect(() => {
+    const result: string[] = handleJsonObject(jsonObject, true);
+    setResult(result);
+  }, [jsonObject]);
+
   const handleJsonObject = (
     jsonObject: any | null,
     isFirst: boolean
   ): string[] => {
-    const keys = Object.keys(jsonObject);
+    const keys = Object.keys(jsonObject ?? {});
     if (keys?.length == 0) return [];
 
     if (!isFirst)
@@ -95,7 +98,7 @@ const Home: NextPage = () => {
           </div>
 
           <div className="flex grow justify-center">
-            <ReactJson src={jsonObject} />
+            <DynamicReactJson src={jsonObject} />
           </div>
 
           <div className="flex flex-col justify-center items-center grow">
