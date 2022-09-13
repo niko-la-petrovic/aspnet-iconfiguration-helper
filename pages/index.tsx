@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import type { NextPage } from "next";
 import dynamic from "next/dynamic";
 import styles from "../styles/Home.module.css";
@@ -87,8 +88,8 @@ const Home: NextPage = () => {
           <code className={styles.code}>e.g. appsettings.json</code>
         </p>
 
-        <div className="flex items-center justify-evenly gap-x-2 w-full">
-          <div className="flex rounded-lg shadow justify-center grow">
+        <div className="flex items-center justify-evenly gap-x-2 w-full h-full">
+          <div className="flex shadow-lg justify-center grow">
             <textarea
               className="w-full grow"
               placeholder="..."
@@ -101,9 +102,9 @@ const Home: NextPage = () => {
             <DynamicReactJson src={jsonObject} />
           </div>
 
-          <div className="flex flex-col justify-center items-center grow">
+          <div className="flex flex-col justify-center items-center gap-y-4 grow h-full">
             <textarea
-              className="w-full grow"
+              className="w-full min-h-full grow shadow-lg"
               placeholder="..."
               value={resultStr}
             />
@@ -118,16 +119,14 @@ const Home: NextPage = () => {
       </main>
 
       <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{" "}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
+        <div className="flex items-center justify-center gap-x-4">
+          <span>by</span>
+          <div>
+            <Link href="https://niko-la-petrovic.github.io/aspnet-iconfiguration-helper/">
+              <a>niko-la-petrovic</a>
+            </Link>
+          </div>
+        </div>
       </footer>
     </div>
   );
